@@ -5,6 +5,8 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 import os
+from flask_wtf import FlaskForm
+from .forms import UploadForm
 from app import app
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from werkzeug.utils import secure_filename
@@ -32,14 +34,18 @@ def upload():
         abort(401)
 
     # Instantiate your form class
+    upload1=UploadForm()
+    if request.method == 'GET':
+        return render_template('upload.html', form=upload1)
 
     # Validate file upload on submit
     if request.method == 'POST':
-        # Get file data and save to your uploads folder
-
-        flash('File Saved', 'success')
-        return redirect(url_for('home'))
-
+        if upload1.validate_on_submit():
+            f=upload1.photo.data
+            filename = secure_filename(f.filename)
+            f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('File Saved', 'success')
+            return redirect(url_for('home'))
     return render_template('upload.html')
 
 
@@ -56,6 +62,23 @@ def login():
             return redirect(url_for('upload'))
     return render_template('login.html', error=error)
 
+def get_uploaded_images():
+    
+    rootdir = os.getcwd()
+    print (rootdir)
+    f = []
+    for subdir, dirs, files in os.walk(rootdir + "./app/static/uploads"):
+        for file in files:
+            f.append(file)
+    return f[1:] 
+
+
+@app.route('/files')
+def files():
+    if not session.get('logged_in'):
+        abort(401)
+    f=get_uploaded_images()
+    return render_template('files.html',f=f)
 
 @app.route('/logout')
 def logout():

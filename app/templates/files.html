@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<h1 class="page-header">Files</h1>
+
+    {{ f.csrf_token }}
+    
+    <div class="grid-container">
+        {% for file in f %}
+        <div class="grid-item">     
+            <ul>
+                <li><img src="{{url_for('static', filename='uploads/' + file)}}"></img></li>
+            </ul>      
+        </div>
+        {% endfor %}
+    </div>
+        
+
+{% endblock %}
